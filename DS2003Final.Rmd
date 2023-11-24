@@ -1,0 +1,48 @@
+---
+title: "DS2003Final"
+output: html_document
+date: "2023-11-23"
+runtime: shiny
+---
+
+Set Up Libraries
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(plotly)
+library(shiny)
+library(rsconnect)
+rsconnect::setAccountInfo(name='tuyendang',
+			  token='454EA1AF41C0A7844B02384148D00513',
+			  secret='5losjj4sAi1DJP/C8MLQgbdo26rWs1E4jLUI+V6m')
+```
+
+Import Data
+```{r}
+data<-read.csv("/Users/tuyen/Downloads/Global_Education.csv")
+colnames(data)
+```
+Cleaning Data
+```{r}
+# column name cleaning
+colnames(data) <- tolower(colnames(data))
+colnames(data)[colnames(data) == "countries.and.areas"] <- "country"
+colnames(data)[colnames(data) == "oosr_pre0primary_age_female"] <- "oosr_preprimary_female"
+colnames(data)[colnames(data) == "oosr_pre0primary_age_male"] <- "oosr_preprimary_male"
+colnames(data)[colnames(data) == "oosr_primary_age_female"] <- "oosr_primary_female"
+colnames(data)[colnames(data) == "oosr_primary_age_male"] <- "oosr_primary_male"
+colnames(data)[colnames(data) == "oosr_lower_secondary_age_female"] <- "oosr_lower_secondary_female"
+colnames(data)[colnames(data) == "oosr_lower_secondary_age_male"] <- "oosr_lower_secondary_male"
+colnames(data)[colnames(data) == "oosr_upper_secondary_age_female"] <- "oosr_upper_secondary_female"
+colnames(data)[colnames(data) == "oosr_upper_secondary_age_male"] <- "oosr_upper_secondary_male"
+
+
+colnames(data)
+
+# remove outlier region
+data <- data[data$country != "Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿"]
+
+# check null values (there were none)
+total_null_values <- sum(is.na(data))
+print(total_null_values)
+```

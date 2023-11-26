@@ -2,10 +2,23 @@
 title: "DS2003Final"
 output: html_document
 date: "2023-11-23"
+author: "Joseph Choe, Tu-Yen Dang, Eunice Kim, Herin Seo, Philip Yao"
 runtime: shiny
 ---
 
-Set Up Libraries
+# Executive Summary
+Using the data collected from over 160 countries on the World Inequality Database on Education (WIDE) data set (developed by the Education for All Global Monitoring Report), this report will look at the relationship between education with other demographics, including gender, wealth, location, ethnicity, and disability to determine the educational opportunity gaps globally. Education is a fundamental human right and a key driver of social and economic development. However, access to quality education is not equally distributed across the world, and many people face significant barriers and disadvantages that prevent them from realizing their full potential.
+
+This report may interest global educational officials, like the heads of the US Department of Education or the UK's Secretary of State for Education. Our results will offer them an opportunity to reflect on their respective countries current system, and explore methods to enhance their education, striving for equitable and improved education nationwide.
+
+# Report Dependencies
+We used the following libraries to help us manipulate and visualize our data set:
+
+* dyplr: for data manipulation and analysis
+* plotly: for data visualization
+* shiny: for creating our interactive shiny app
+* rsconnect: for allowing our app to run
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(dplyr)
@@ -17,12 +30,22 @@ rsconnect::setAccountInfo(name='tuyendang',
 			  secret='5losjj4sAi1DJP/C8MLQgbdo26rWs1E4jLUI+V6m')
 ```
 
-Import Data
+# Data Set
+## Finding and Importing Data
+* Data Source: [World Educational Data](https://www.kaggle.com/datasets/nelgiriyewithana/world-educational-data)
+* Found on Kaggle, this source was derived from the World Inequality Database on Education (WIDE), developed by the Education for All Global Monitoring Report.
 ```{r}
 data<-read.csv("/Users/tuyen/Downloads/Global_Education.csv")
-colnames(data)
+# colnames(data)
 ```
-Cleaning Data
+
+Some columns we found useful for our analysis include:
+
+*  `Countries.and.areas`: country/region observed
+
+## Data Cleaning
+The data was already fairly clean, however we made the names of the column easier to read and use for later data visualization. Additionally, we noticed a random country under a non-existent country name, so we removed it to keep our data accurate. While checking for null values, it was found that there were none, so we did not have to do any manipulation with that.
+
 ```{r}
 # column name cleaning
 colnames(data) <- tolower(colnames(data))
@@ -39,10 +62,35 @@ colnames(data)[colnames(data) == "oosr_upper_secondary_age_male"] <- "oosr_upper
 
 colnames(data)
 
-# remove outlier region
-data <- data[data$country != "Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿"]
+# remove outlier
+data <- data[data$country != "Sï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿", ]
 
 # check null values (there were none)
 total_null_values <- sum(is.na(data))
 print(total_null_values)
 ```
+
+
+# Background/Questions
+Give a background on the inspiration for the dataset and questions. E.g., set up the story. Should be 1-2 paragraphs.
+
+# EDA
+After cleaning, our dataset has major identifiers on demographics related in relation to education. The major variables we will be using are:
+
+*  `country`: country/region observed
+
+# Question 1 Plot & Narrative
+
+* Question:
+* Narrative: Explain it like you are telling a story to someone who isn’t familiar with the data. Why is this important? What does it answer? If done well, your graph should explain itself
+
+# Question 2 Plot & Narrative
+* Question:
+
+# Challenges and Limitations
+
+# Summary
+Wrap up the narrative for your reader/stakeholder. What are the key takeaways/learning points?
+
+# Citations
+Elgiryewithana, N. (2023). World Educational Data. *Kaggle*, https://www.kaggle.com/datasets/nelgiriyewithana/world-educational-data

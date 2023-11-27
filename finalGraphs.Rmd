@@ -1,0 +1,209 @@
+---
+title: "Final Project Graphs"
+output:
+  html_document:
+    number_sections: no
+    toc: yes
+    toc_float: yes
+    code_folding: show
+date: "2023-11-23"
+author: "Joseph Choe, Tu-Yen Dang, Eunice Kim, Herin Seo, Philip Yao"
+runtime: shiny    
+---
+
+# Executive Summary
+Using the data collected from over 196 countries on the Inequality in Education Around the World data set (developed and derived from the Human Development Reports), this report will look at the relationship between education with global regions, and where they stand in how well they excel in lifestyles. Education is a fundamental human right and a key driver of social and economic development. However, access to quality education is not equally distributed across the world, and many people face significant barriers and disadvantages that prevent them from realizing their full potential.
+
+This report may interest global educational officials, like the heads of the US Department of Education or the UK's Secretary of State for Education, who want to see how much education can affect a country's standard of life. Our results will offer them an opportunity to compare their systems with other nations, and explore ways to enhance their education (or share their methods with other nations), striving for equitable and improved education globally.
+
+# Report Dependencies
+We used the following libraries to help us manipulate and visualize our data set:
+
+* `knitr`: used for knitting code
+* `tidyverse`: used for data manipulation, cleaning, and visualization
+* `tidyr`: used for data cleaning & transformation
+* `plotly`: used for data visualization
+* `foreign`: used for importing datasets and statistics
+* `shiny`: used for building application
+* `ggplot2`: used for data visualization
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, message=FALSE, warning=FALSE)
+library(knitr)
+library(tidyverse)
+library(tidyr)
+library(plotly)
+library(foreign)
+library(shiny)
+library(ggplot2)
+```
+
+# Data Set
+## Finding and Importing Data
+* Data Source: [Global Inequality in Education](https://www.kaggle.com/datasets/iamsouravbanerjee/inequality-in-education-around-the-world)
+* Found on Kaggle, this source was derived from the Human Development Reports, found [here](https://hdr.undp.org/).
+```{r}
+data <- read.csv("/Users/tuyen/Downloads/Inequality in Education.csv")
+colnames(data)
+```
+
+We found all the columns in the data set useful for our analysis. Below is a description of each of the columns:
+
+* `Country`: name of country observed
+* `UNDP.Developing.Regions`: UNDP Developing Regions, including: Sub-Saharan Africa (SSA), Latin America and the Caribbean (LAC), East Asia and the Pacific (EAP), Arab States (AS), Europe and Central Asia (ECA), South Asia (SA)
+* `HDI.Rank..2021`: Human Development Index Rank for 2021
+* `Inequality.in.Education..2010` through `Inequality.in.Education..2021`: Inequality for Education for the respective year
+
+## Data Cleaning
+The data itself was already fairly clean. However, there were some missing values in the columns, which we handled through ____. We also made sure that the values in our `Inequality in Education` columns were numeric. Additionally, to make it more friendly with our visualization, we created two subsets of data frames. One was used to group the countries based on their respective UNDP Developing regions and was reshaped (called `df_region_mean_long`), and the other was a melted version of our data to allow for interactive visualization (called `df_melted`. The comments in the code describe what is currently being done with each chunk.
+```{r}
+# Group countries by UNDP Dev. Regions and compute mean for each year
+df_region_mean <- data %>%
+  group_by(`UNDP.Developing.Regions`) %>%
+  summarize(across(starts_with("Inequality.in.Education"), mean, na.rm = TRUE))
+```
+
+```{r}
+# Reshape data for plotting
+df_region_mean_long <- df_region_mean %>%
+  pivot_longer(cols = starts_with("Inequality.in.Education"), names_to = "Year", values_to = "Average_Inequality")
+```
+
+```{r}
+# Convert "Inequality in Education" columns to numeric
+inequality_columns <- grep("Inequality.in.Education", names(data), value = TRUE)
+data[inequality_columns] <- lapply(data[inequality_columns], as.numeric)
+```
+
+```{r}
+# Create melted version of df
+## Note: HDI stands for Human Development Index (HDI)
+df_melted <- data %>%
+  select('Country', 'Human.Development.Groups', 'UNDP.Developing.Regions', 'HDI.Rank..2021.', 
+         'Inequality.in.Education..2010.', 'Inequality.in.Education..2011.',
+         'Inequality.in.Education..2012.', 'Inequality.in.Education..2013.',
+         'Inequality.in.Education..2014.', 'Inequality.in.Education..2015.',
+         'Inequality.in.Education..2016.', 'Inequality.in.Education..2017.',
+         'Inequality.in.Education..2018.', 'Inequality.in.Education..2019.',
+         'Inequality.in.Education..2020.', 'Inequality.in.Education..2021.') %>%
+  pivot_longer(cols = starts_with("Inequality.in.Education"), 
+               names_to = "Year", 
+               values_to = "Inequality.in.Education") %>%
+  mutate(Year = as.integer(gsub("\\D", "", Year)))
+```
+
+# Background/Questions
+Education is such an important factor to a person's life. Now, the question of just how important it is arises. Since there are many other parts of life to consider aside from one's education, it's important to factor those in too. With the given data set, we are able to propose and research the question, "How does education inequality affect a country's human development rank, and how has it progressed throughout the years?".
+
+Furthermore, it would be interesting to see whether or not there is a trend in education inequality when grouping countries into specific geographical regions, to see if there are any particular areas in the world doing better or worse in the education sector. This inspired our second question of, "What are the trends in education inequality in a certain geographical region?". The data set provides us each country's UNDP developing region, so we are able to group them and see if there are any trends. This grouping also would allow us to compare the regions with one another, and see whether one region is doing better or not.
+
+
+
+
+# Data Descriptives:
+These new dataframes still contain the prior information given in the original dataset (can be found in the Data Set section), but we now have variables that will be directly used with our data visualization process including: `Country`, `UNDP.Developing.Regions`, `HDI.Rank..2021`, `Inequality.in.Education..2010` through `Inequality.in.Education..2021`, `Year`, and `Average_Inequality`. A description of what each variable is and how it was used can be found below. 
+
+* `Country`: Country is the name of the country for each row. This will be useful, as it is the observation for the values.
+* `UNDP.Developing.Regions`: UNDP Developing Regions includes the following categories: Sub-Saharan Africa (SSA), Latin America and the Caribbean (LAC), East Asia and the Pacific (EAP), Arab States (AS), Europe and Central Asia (ECA), South Asia (SA). This can be later used to see if any specific developing region has had a trend in their average inequality in education.
+* `HDI.Rank..2021`: This column stands for the Human Development Index Rank for 2021. This is a numerical ranking based on their given value for the Human Development Index, which is found through the following categories: very high (0.8-1.0), high (0.7-0.79), medium (0.55-0.7) and low (below 0.55). These ranks were measured on a country's life expectancy at birth, knowledge (measured by mean years of schooling and expected years of schooling), and the standard of living.
+* `Inequality.in.Education..2010` through `Inequality.in.Education..2021`: This column describes the rate of inequality for education for the respective year of a country (there are separate columns for each year from 2010 through 2021).
+
+# Question 1 Plot & Narrative
+
+* Question: How does education inequality affect a country's human development rank, and how has it progressed throughout the years?
+* Narrative: Using this data set, we have the opportunity to explore this by seeing how a country's HDI Rank compares with its inequality in education rate, and whether or not there is .
+
+# Question 2 Plot & Narrative
+
+* Question: What are the trends in education inequality in a certain geographical region?
+* Narrative: 
+```{r, echo=FALSE}
+ui <- fluidPage(
+  titlePanel("Analysis Graphs"),
+  tabsetPanel(
+    tabPanel("Scatter Plot", 
+             plotlyOutput("scatter_plot")
+    ),
+    tabPanel("Average Inequality in Education",
+             sidebarLayout(
+               sidebarPanel(
+                 selectInput("region_input", "Select UNDP Developing Region", choices = unique(data$UNDP.Developing.Regions)),
+               ),
+               mainPanel(
+                 plotOutput("line_plot")
+               )
+             )
+    )
+  )
+)
+
+
+server <- function(input, output) {
+  
+  # Render the interactive scatter plot
+  output$scatter_plot <- renderPlotly({
+    fig <- df_melted %>%
+      plot_ly(x = ~`HDI.Rank..2021.`, 
+              y = ~`Inequality.in.Education`, 
+              color = ~`Human.Development.Groups`,
+              frame = ~Year, 
+              text = ~Country,
+              type = 'scatter',
+              mode = 'markers',
+              marker = list(size = 10),
+              range = list(y = c(0, max(df_melted$`Inequality in Education`) + 5))) %>%
+      layout(title = 'Inequality in Education vs HDI Rank (2010-2021)',
+             xaxis = list(title = 'HDI Rank (2021)'),
+             yaxis = list(title = 'Inequality in Education'),
+             autosize = FALSE,
+             width = 800,
+             height = 600)
+    
+    fig
+  })
+  # Add the server logic for the Average Inequality in Education Shiny app
+  # Filter data based on selected region, excluding rows with NAs
+  filtered_data <- reactive({
+    req(input$region_input)
+    df_region_mean_long %>%
+      filter(`UNDP.Developing.Regions` == input$region_input)
+  })
+  # Render the line plot
+  output$line_plot <- renderPlot({
+    ggplot(data = filtered_data(), aes(x = as.factor(Year), y = Average_Inequality, group = `UNDP.Developing.Regions`, color = `UNDP.Developing.Regions`)) +
+      geom_line() +
+      labs(title = paste("Average Inequality in Education (2010-2021) -", input$region_input),
+           x = "Year",
+           y = "Average Inequality in Education") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+      scale_color_discrete(name = "UNDP Developing Region")
+  })
+}
+# Run the Shiny app
+shinyApp(ui, server)
+```
+# Challenges/Limitations
+
+# Summary
+* Question: How does education inequality affect a country's human development rank, and how has it progressed throughout the years?
+* Question: What are the trends in education inequality in a certain geographical region?
+
+Based on the visualizations above, it can be concluded that:
+1. Education inequality has a positive correlation with a country's human development rank
+  * This suggests that as a country's education inequality rate increases, its Human Development Index (HDI) rank tends to be higher. In essence, higher education inequality contributes to a lower position in the ranking list. This highlights the impact of education inequality on a country's human development rank, indicating that lower inequality in education results in a superior ranking and higher tier placement within the index.
+2. The most significant changes in ranks occurred among countries classified in the "very high" HDI category, whereas minimal movement was observed in the "low" HDI rankings concerning education inequality:
+  * Notably, this observation may indicate a potential trend where countries with lower HDI rankings exhibit relatively static progress in developing their education systems over time. Conversely, nations placed in higher HDI categories seem to engage in ongoing efforts to reduce education inequality, subsequently enhancing their HDI scores.
+3. 
+Sub-Saharan Africa (SSA): flucuated around 33.8 until 2019 (drastic decrease) -> averaged 32.9
+Latin America and the Caribbean (LAC): steady decline (log) from 19 to 15.1
+East Asia and the Pacific (EAP): flucuates very much in the middle, but went from 19.5 to 15.1
+Arab States (AS): logorithmic, steady decline from 32.75 to 24.2
+Europe and Central Asia (ECA): steady decline from 9.5 to 6.75 (logorithmic)
+South Asia (SA): avg 37.7 until 2016 -> averaged 33.2; drastic decrease
+
+
+# Citations
+[Human Development Reports](https://hdr.undp.org/)
+
+[Inequality in Education Around the World Data set] (https://www.kaggle.com/datasets/iamsouravbanerjee/inequality-in-education-around-the-world)

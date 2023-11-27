@@ -50,6 +50,7 @@ colnames(data)
 We found all the columns in the data set useful for our analysis. Below is a description of each of the columns:
 
 * `Country`: name of country observed
+* `Human.Development.Groups`: Categorical rating for Human Development (very high, high, medium, and low)
 * `UNDP.Developing.Regions`: UNDP Developing Regions, including: Sub-Saharan Africa (SSA), Latin America and the Caribbean (LAC), East Asia and the Pacific (EAP), Arab States (AS), Europe and Central Asia (ECA), South Asia (SA)
 * `HDI.Rank..2021`: Human Development Index Rank for 2021
 * `Inequality.in.Education..2010` through `Inequality.in.Education..2021`: Inequality for Education for the respective year
@@ -97,9 +98,6 @@ Education is such an important factor to a person's life. Now, the question of j
 
 Furthermore, it would be interesting to see whether or not there is a trend in education inequality when grouping countries into specific geographical regions, to see if there are any particular areas in the world doing better or worse in the education sector. This inspired our second question of, "What are the trends in education inequality in a certain geographical region?". The data set provides us each country's UNDP developing region, so we are able to group them and see if there are any trends. This grouping also would allow us to compare the regions with one another, and see whether one region is doing better or not.
 
-
-
-
 # Data Descriptives:
 These new dataframes still contain the prior information given in the original dataset (can be found in the Data Set section), but we now have variables that will be directly used with our data visualization process including: `Country`, `UNDP.Developing.Regions`, `HDI.Rank..2021`, `Inequality.in.Education..2010` through `Inequality.in.Education..2021`, `Year`, and `Average_Inequality`. A description of what each variable is and how it was used can be found below. 
 
@@ -108,23 +106,52 @@ These new dataframes still contain the prior information given in the original d
 * `HDI.Rank..2021`: This column stands for the Human Development Index Rank for 2021. This is a numerical ranking based on their given value for the Human Development Index, which is found through the following categories: very high (0.8-1.0), high (0.7-0.79), medium (0.55-0.7) and low (below 0.55). These ranks were measured on a country's life expectancy at birth, knowledge (measured by mean years of schooling and expected years of schooling), and the standard of living.
 * `Inequality.in.Education..2010` through `Inequality.in.Education..2021`: This column describes the rate of inequality for education for the respective year of a country (there are separate columns for each year from 2010 through 2021).
 
-# Question 1 Plot & Narrative
+# Questions
+This section will review the research questions we have proposed, and the methods used to explore and answer them. We did this by creating graphs to visualize the data and allow for more efficient analyzation. We created two graphs, one to visualize data for the first question, and the other is for the second. The exact code we used to develop this is available under the description portions of the question.
 
-* Question: How does education inequality affect a country's human development rank, and how has it progressed throughout the years?
-* Narrative: Using this data set, we have the opportunity to explore this by seeing how a country's HDI Rank compares with its inequality in education rate, and whether or not there is .
+## Question 1 Plot & Narrative
 
-# Question 2 Plot & Narrative
+### Question:
+How does education inequality affect a country's human development rank, and how has it progressed throughout the years?
 
-* Question: What are the trends in education inequality in a certain geographical region?
-* Narrative: 
+### Description:
+
+* Using this data set, we have the opportunity to explore this by seeing how a country's HDI Rank compares with its inequality in education rate, and look at the changes overtime. We decided a scatter plot would best represent the countries, and they are plotted based on their HDI rank in 2021 (x-axis), and their inequality in education (y-axis).
+* We then added a tracing to describe the HDI groups each country was placed in (very high, high, medium, and low).
+* Finally, to make sure this can be observed overtime, a user input is inputted with the years available: from 2010 to 2021.
+
+### Observations:
+
+* Generally, it can be seen that the HDI group the countries are in generally stays in their respective ranges in HDI ranking. The major differences lie in the inequality in education rate.
+    + The very high categorized countries can be seen fluctuating significantly in the earlier years (2010-2016), whereas in later years, less change occurs in this group.
+    + The high categorized countries also had a decent amount of fluctuation between 2010 through 2018. The medium categorized countries also followed that trend.
+    + The low tiered countries had fairly minimal fluctuation. It was still visible, but there were a lot less movement in education inequality rates throughout the years.
+
+## Question 2 Plot & Narrative
+
+### Question:
+What are the trends in education inequality in a certain geographical region?
+
+### Description:
+* Our approach with analyzing this was to take the mean of each inequality in education statistic per year for each region, and to turn it into a line graph to see the progression of average education inequality overtime. The user is then able to choose which region they would like to analyze.
+
+### Observation:
+Over time, the regions experienced the following decreases in education inequality: 
+* South Asia (SA): high and steady inequality value of 37.8 up until 2016, where there is a significant drop down to 33. From there, the average education inequality remains around that value.
+* Sub-Saharan Africa (SSA): fluctuates from 33.5-34 from 2010-2018. At 2019, there was a significant drop down to 32.5.
+* Europe and Central Asia (ECA): steady decline (almost logarithmic) from 9.5 to 5.75.
+* Arab States (AS): steady decline (logarithmic) from 32.7 to 23.5.
+* Latin America and the Caribbean (LAC): steady decline (logarithmic) from 19 to 15.1.
+* East Asia and Pacific (EAP): lots of fluctuation in between, but there's an overall decline from 19.5 to 15.1.
+
 ```{r, echo=FALSE}
 ui <- fluidPage(
   titlePanel("Analysis Graphs"),
   tabsetPanel(
-    tabPanel("Scatter Plot", 
+    tabPanel("Q1: Scatter Plot of Inequality in Education vs. HDI Rank", 
              plotlyOutput("scatter_plot")
     ),
-    tabPanel("Average Inequality in Education",
+    tabPanel("Q2: Average Inequality in Education per Region",
              sidebarLayout(
                sidebarPanel(
                  selectInput("region_input", "Select UNDP Developing Region", choices = unique(data$UNDP.Developing.Regions)),
@@ -136,8 +163,9 @@ ui <- fluidPage(
     )
   )
 )
+```
 
-
+```{r}
 server <- function(input, output) {
   
   # Render the interactive scatter plot
@@ -156,8 +184,8 @@ server <- function(input, output) {
              xaxis = list(title = 'HDI Rank (2021)'),
              yaxis = list(title = 'Inequality in Education'),
              autosize = FALSE,
-             width = 800,
-             height = 600)
+             width = 600,
+             height = 400)
     
     fig
   })
@@ -184,26 +212,30 @@ server <- function(input, output) {
 shinyApp(ui, server)
 ```
 # Challenges/Limitations
+One of our limitations was that only the data for HDI Rank in 2021 was available. There was no access to the rank of other years to accurately describe the relationship between a country's education inequality throughout the years, with its HDI Rank throughout the years. Instead, we used the HDI Rank of 2021 throughout the years.
+
+We also had many countries recorded in the data set with missing values. Most missing values were from countries that simply had no values recorded, while other missing values were from countries not recording their data far back enough. This may have caused a bias towards more developed countries, who are able to record their values more officially from an earlier time. To handle this, we first checked to see which columns had the null values, and where it was significantly prominent:  
+
+* Human Development Groups: 4 missing values
+* UNDP Developing Regions: 44 missing values
+* HDI Rank (2021): 4 missing values
+* Inequality in Education (2010-2021): The number of missing values ranges from 19 to 58 for different years.
+
+We then ________.
 
 # Summary
-* Question: How does education inequality affect a country's human development rank, and how has it progressed throughout the years?
-* Question: What are the trends in education inequality in a certain geographical region?
+Based on the visualizations above, it can be concluded that: 
 
-Based on the visualizations above, it can be concluded that:
-1. Education inequality has a positive correlation with a country's human development rank
-  * This suggests that as a country's education inequality rate increases, its Human Development Index (HDI) rank tends to be higher. In essence, higher education inequality contributes to a lower position in the ranking list. This highlights the impact of education inequality on a country's human development rank, indicating that lower inequality in education results in a superior ranking and higher tier placement within the index.
-2. The most significant changes in ranks occurred among countries classified in the "very high" HDI category, whereas minimal movement was observed in the "low" HDI rankings concerning education inequality:
-  * Notably, this observation may indicate a potential trend where countries with lower HDI rankings exhibit relatively static progress in developing their education systems over time. Conversely, nations placed in higher HDI categories seem to engage in ongoing efforts to reduce education inequality, subsequently enhancing their HDI scores.
-3. 
-Sub-Saharan Africa (SSA): flucuated around 33.8 until 2019 (drastic decrease) -> averaged 32.9
-Latin America and the Caribbean (LAC): steady decline (log) from 19 to 15.1
-East Asia and the Pacific (EAP): flucuates very much in the middle, but went from 19.5 to 15.1
-Arab States (AS): logorithmic, steady decline from 32.75 to 24.2
-Europe and Central Asia (ECA): steady decline from 9.5 to 6.75 (logorithmic)
-South Asia (SA): avg 37.7 until 2016 -> averaged 33.2; drastic decrease
-
+1. Education inequality has a positive correlation with a country's human development rank.
+    + This suggests that as a country's education inequality rate increases, its Human Development Index (HDI) rank tends to be higher. In essence, higher education inequality contributes to a lower position in the ranking list. This highlights the impact of education inequality on a country's human development rank, indicating that lower inequality in education results in a superior ranking and higher tier placement within the index.
+2. The most significant changes in ranks occurred among countries classified in the "very high" HDI category, whereas minimal movement was observed in the "low" HDI rankings concerning education inequality.
+    + Notably, this observation may indicate a potential trend where countries with lower HDI rankings exhibit relatively static progress in developing their education systems over time. Conversely, nations placed in higher HDI categories seem to engage in ongoing efforts to reduce education inequality, subsequently enhancing their HDI scores.
+3. Regionally, it can be seen that most regions decreased their education inequality overtime.
+    + Some countries had a more steady including Latin America and the Caribbean (LAC), Arab States (AS), and Europe and Central Asia (ECA). Others remained steady until a drastic drop, like the Sub-Saharan Africa (SSA) in 2019, and South Asia in 2016. The East Asian and Pacific region was seen the fluctuate a lot, but generally had a decreasing trend.
+4. Europe and Central Asia had a significantly lower rate of education inequality compared to all the other regions every year, ranging from 6.75-9.5 over the 2010-2021 time period. After that, the Latin America and the Caribbean (LAC), and East Asia and Pacific region both had a higher rate of education inequality, but was still significantly lower than the other three regions. Both regions ranged from 15.1-19.5 over the same time period. Finally, the other three regions SSA, AS, and SA had a rate of education inequality in the 30s.
+    + It's almost as if the ranges for the regions are in tiers of a pyramid, with Europe and Central Asia in the top, and the Sub-Saharan Africa, Arab States, and South Asia at the bottom.
 
 # Citations
 [Human Development Reports](https://hdr.undp.org/)
 
-[Inequality in Education Around the World Data set] (https://www.kaggle.com/datasets/iamsouravbanerjee/inequality-in-education-around-the-world)
+[Inequality in Education Data Set](https://www.kaggle.com/datasets/iamsouravbanerjee/inequality-in-education-around-the-world)
